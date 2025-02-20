@@ -1,24 +1,29 @@
 const URL = "https://fakestoreapi.com/products";
 
-const divButtonElem = document.getElementById('sortButton')
-const sortButton = document.createElement('button')
-sortButton.textContent = 'sort by price'
-divButtonElem.appendChild(sortButton)
-
+const divButtonElem = document.getElementById("sortButton");
+const sortButton = document.createElement("button");
+sortButton.textContent = "sort by price";
+divButtonElem.appendChild(sortButton);
 
 async function getProducts() {
-  const response = await fetch(URL);
-  const data = await response.json();
-  return data;
+  try {
+    const response = await fetch(URL);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
 }
 
-console.log(getProducts());
-
 async function showProducts() {
-  const products = await getProducts();
-  products.forEach((product) => {
-    createCard(product);
-  });
+  try {
+    const products = await getProducts();
+    products.forEach((product) => {
+      createCard(product);
+    });
+  } catch (error) {
+    displayError("Something went wrond during the products render");
+  }
 }
 
 function createCard(product) {
@@ -36,16 +41,31 @@ function createCard(product) {
 
   const infoElem = document.createElement("p");
   infoElem.innerHTML = product.description;
-  
+
   productCard.append(titleElem, imageElem, infoElem, priceElem);
 
   document.querySelector(".products").appendChild(productCard);
 }
 
-function sortPrice() {
+async function sortPrice() {
+  try {
+    const products = await getProducts();
+    const sortedProducts = products.sort((a, b) => a.price - b.price);
 
+    const productsContainer = document.querySelector(".products");
+    productsContainer.innerHTML = "";
+    sortedProducts.forEach((product) => createCard(product));
+  } catch (error) {
+    displayError("Something went wrong during the price sorting");
+  }
 }
 
-sortButton.addEventListener('click', sortPrice())
+function displayError(message) {
+  const productsContainer = document.querySelector(".products");
+  productsContainer.innerHTML = "";
+  productsContainer.textContent = message;
+}
+
+sortButton.addEventListener("click", sortPrice);
 
 showProducts();
