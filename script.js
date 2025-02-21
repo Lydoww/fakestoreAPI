@@ -4,6 +4,8 @@ const divButtonElem = document.getElementById("sortButton");
 const sortButton = document.createElement("button");
 sortButton.textContent = "sort by price";
 divButtonElem.appendChild(sortButton);
+isAscending = true;
+let products = [];
 
 async function getProducts() {
   try {
@@ -17,13 +19,17 @@ async function getProducts() {
 
 async function showProducts() {
   try {
-    const products = await getProducts();
-    products.forEach((product) => {
-      createCard(product);
-    });
+    products = await getProducts();
+    renderProducts(products);
   } catch (error) {
     displayError("Something went wrond during the products render");
   }
+}
+
+function renderProducts(products) {
+  const productsContainer = document.querySelector(".products");
+  productsContainer.innerHTML = "";
+  products.forEach((product) => createCard(product));
 }
 
 function createCard(product) {
@@ -31,16 +37,16 @@ function createCard(product) {
   productCard.classList.add("product-card");
 
   const titleElem = document.createElement("h2");
-  titleElem.innerHTML = product.title;
+  titleElem.textContent = product.title;
 
   const priceElem = document.createElement("p");
-  priceElem.innerHTML = `${product.price} $`;
+  priceElem.textContent = `${product.price} $`;
 
   const imageElem = document.createElement("img");
   imageElem.src = product.image;
 
   const infoElem = document.createElement("p");
-  infoElem.innerHTML = product.description;
+  infoElem.textContent = product.description;
 
   productCard.append(titleElem, imageElem, infoElem, priceElem);
 
@@ -49,12 +55,16 @@ function createCard(product) {
 
 async function sortPrice() {
   try {
-    const products = await getProducts();
-    const sortedProducts = products.sort((a, b) => a.price - b.price);
+    const sortedProducts = [...products].sort((a, b) =>
+      isAscending ? a.price - b.price : b.price - a.price
+    );
 
-    const productsContainer = document.querySelector(".products");
-    productsContainer.innerHTML = "";
-    sortedProducts.forEach((product) => createCard(product));
+    isAscending = !isAscending;
+    sortButton.textContent = isAscending
+      ? "Sort by price (asc)"
+      : "Sort by price (desc)";
+
+    renderProducts(sortedProducts);
   } catch (error) {
     displayError("Something went wrong during the price sorting");
   }
